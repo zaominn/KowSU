@@ -36,4 +36,4 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Check KowSU daemon
-        run: cargo check --locked --package ksud --target aarch64-linux-android
+        run: cargo check --package ksud --target aarch64-linux-android
