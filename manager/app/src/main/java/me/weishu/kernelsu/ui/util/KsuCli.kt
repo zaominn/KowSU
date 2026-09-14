@@ -109,6 +109,29 @@ fun execKsud(args: String, newShell: Boolean = false, globalMnt: Boolean = false
     }
 }
 
+/**
+ * Query SUSFS through the daemon interface used by ReSukiSU, then fall back to
+ * the standalone ksu_susfs client shipped by classic SUSFS modules.
+ */
+fun getSusfsStatus(): String {
+    val commands = listOf(
+        "${getKsuDaemonPath()} susfs version",
+        "/data/adb/ksu/bin/ksu_susfs show version",
+    )
+    for (command in commands) {
+        val output = runCatching {
+            ShellUtils.fastCmd(getRootShell(), "$command 2>/dev/null").trim()
+        }.getOrDefault("")
+        if (output.isNotEmpty() &&
+            !output.contains("not found", ignoreCase = true) &&
+            !output.contains("unknown", ignoreCase = true)
+        ) {
+            return output.lineSequence().last().trim()
+        }
+    }
+    return ""
+}
+
 suspend fun getFeatureStatus(feature: String): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val out = shell.newJob()
