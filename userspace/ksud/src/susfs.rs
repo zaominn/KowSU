@@ -28,7 +28,10 @@ struct SusfsFeatures {
 }
 
 fn bytes_to_string(bytes: &[u8]) -> Option<String> {
-    let end = bytes.iter().position(|&byte| byte == 0).unwrap_or(bytes.len());
+    let end = bytes
+        .iter()
+        .position(|&byte| byte == 0)
+        .unwrap_or(bytes.len());
     let value = std::str::from_utf8(&bytes[..end]).ok()?.trim();
     (!value.is_empty()).then(|| value.to_owned())
 }
