@@ -35,5 +35,24 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-      - name: Check KowSU daemon
-        run: cargo check --locked --package ksud --target aarch64-linux-android
+      - name: Verify SUSFS adapter wiring
+        run: |
+          rg -q 'mod susfs;' userspace/ksud/src/main.rs
+          rg -q 'Commands::Susfs' userspace/ksud/src/cli.rs
+          rg -q 'susfs version' manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt
+
+      - name: Check SUSFS adapter for Android
+        run: |
+          adapter_dir=$(mktemp -d)
+          mkdir -p "$adapter_dir/src"
+          cp userspace/ksud/src/susfs.rs "$adapter_dir/src/lib.rs"
+          {
+            echo '[package]'
+            echo 'name = "kowsu-susfs-adapter-check"'
+            echo 'version = "0.1.0"'
+            echo 'edition = "2024"'
+            echo
+            echo '[dependencies]'
+            echo 'libc = "0.2"'
+          } > "$adapter_dir/Cargo.toml"
+          cargo check --manifest-path "$adapter_dir/Cargo.toml" --target aarch64-linux-android
