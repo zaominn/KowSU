@@ -662,15 +662,6 @@ private fun InfoCard(
                     content = seccompDisplay,
                 )
             }
-            item {
-                InfoCardItem(
-                    icon = Icons.Filled.Security,
-                    label = stringResource(R.string.home_susfs_status),
-                    content = systemInfo.susfsStatus.ifEmpty {
-                        stringResource(R.string.home_susfs_not_detected)
-                    },
-                )
-            }
         }
     }
 }
@@ -706,10 +697,6 @@ private fun ClassicInfoCard(
             ClassicInfoCardItem(stringResource(R.string.home_fingerprint), systemInfo.fingerprint)
             ClassicInfoCardItem(stringResource(R.string.home_selinux_status), selinuxDisplay)
             ClassicInfoCardItem(stringResource(R.string.home_seccomp_status), seccompDisplay)
-            ClassicInfoCardItem(
-                stringResource(R.string.home_susfs_status),
-                systemInfo.susfsStatus.ifEmpty { stringResource(R.string.home_susfs_not_detected) },
-            )
         }
     }
 }
@@ -766,7 +753,6 @@ private val previewSystemInfo = SystemInfo(
     fingerprint = "google/raven/raven:14/AP1A.240305.019:user/release-keys",
     selinuxStatus = "Enforcing",
     seccompStatus = 2,
-    susfsStatus = "SUSFS 2.0.0",
 )
 
 private val previewUriHandler = object : UriHandler {

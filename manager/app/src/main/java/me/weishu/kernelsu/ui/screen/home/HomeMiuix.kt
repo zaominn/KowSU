@@ -569,14 +569,6 @@ private fun InfoCard(
                     title = stringResource(R.string.home_seccomp_status),
                     content = seccompDisplay,
                 )
-                InfoText(
-                    icon = Icons.Filled.Security,
-                    title = stringResource(R.string.home_susfs_status),
-                    content = systemInfo.susfsStatus.ifEmpty {
-                        stringResource(R.string.home_susfs_not_detected)
-                    },
-                    bottomPadding = 0.dp,
-                )
             }
         }
     }
@@ -622,7 +614,6 @@ private val previewSystemInfo = SystemInfo(
     fingerprint = "Xiaomi/popsicle/popsicle:16/BQ2A.250705.001-BP2A.250605.031.A3/OS3.0.313.0.WPBCNXM:user/release-keys",
     selinuxStatus = "Enforcing",
     seccompStatus = 2,
-    susfsStatus = "SUSFS 2.0.0",
 )
 
 private val previewUriHandler = object : UriHandler {

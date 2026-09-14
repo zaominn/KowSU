@@ -11,6 +11,8 @@
 )]
 
 mod apk_sign;
+#[cfg(target_os = "android")]
+mod android;
 mod assets;
 mod boot_patch;
 #[cfg(target_os = "android")]
@@ -50,8 +52,6 @@ mod sepolicy;
 mod su;
 #[cfg(target_os = "android")]
 mod sulog;
-#[cfg(target_os = "android")]
-mod susfs;
 #[cfg(target_os = "android")]
 mod unload;
 #[cfg(target_os = "android")]

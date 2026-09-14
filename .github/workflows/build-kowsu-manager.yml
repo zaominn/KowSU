@@ -2,7 +2,7 @@ name: Build KowSU production manager
 
 on:
   push:
-    branches: [master]
+    branches: [master, feature/susfs-settings]
     paths:
       - '.github/workflows/build-kowsu-manager.yml'
       - 'manager/**'
@@ -90,6 +90,14 @@ jobs:
       - name: Build KowSU release APK
         run: ./gradlew --no-daemon assembleRelease
 
+      - name: Record manager version
+        run: |
+          version_name=$(git describe --tags --always)
+          version_code=$((30000 + $(git rev-list --count HEAD)))
+          echo "MANAGER_VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+          echo "MANAGER_VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "MANAGER_ARTIFACT=KowSU-Manager-${version_name}-${version_code}" >> "$GITHUB_ENV"
+
       - name: Verify artifact identity
         run: |
           set -euo pipefail
@@ -99,13 +107,13 @@ jobs:
           unzip -l "$apk" | grep -Fq 'lib/arm64-v8a/libksud.so'
           "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)/apksigner" \
             verify --verbose --print-certs "$apk" | tee apk-signature.txt
-          cp "$apk" KowSU-Manager.apk
+          cp "$apk" "KowSU-Manager-${MANAGER_VERSION_NAME}-${MANAGER_VERSION_CODE}.apk"
 
       - name: Upload KowSU manager
         uses: actions/upload-artifact@v4
         with:
-          name: KowSU-Manager-${{ github.sha }}
+          name: ${{ env.MANAGER_ARTIFACT }}
           path: |
-            manager/KowSU-Manager.apk
+            manager/KowSU-Manager-*.apk
             manager/apk-signature.txt
           if-no-files-found: error

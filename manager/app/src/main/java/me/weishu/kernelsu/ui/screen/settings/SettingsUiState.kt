@@ -30,6 +30,7 @@ data class SettingsUiState(
     // WebUI Modules shortcut entry
     val isToolkitInstalled: Boolean = false,
     val isKpatchNextInstalled: Boolean = false,
+    val isSusfsSupported: Boolean = false,
 
     // Su Compat
     val suCompatStatus: String = "",
@@ -76,6 +77,7 @@ data class SettingsScreenActions(
     val onOpenTheme: () -> Unit,
     val onSetUiModeIndex: (Int) -> Unit,
     val onOpenProfileTemplate: () -> Unit,
+    val onOpenSusfs: () -> Unit,
     val onSetSuCompatMode: (Int) -> Unit,
     val onSetKernelUmountEnabled: (Boolean) -> Unit,
     val onSetSelinuxHideEnabled: (Boolean) -> Unit,

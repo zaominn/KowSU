@@ -113,11 +113,8 @@ enum Commands {
         command: Feature,
     },
 
-    /// Query the optional SUSFS kernel extension
-    Susfs {
-        #[command(subcommand)]
-        command: Susfs,
-    },
+    /// Manage the optional SUSFS kernel extension
+    Susfs(crate::android::susfs::cli::SusfsArgs),
 
     /// Patch boot or init_boot images to apply KernelSU
     BootPatch(BootPatchArgs),
@@ -184,16 +181,6 @@ enum BootInfo {
         #[arg(short = 'u', long, default_value = "false")]
         ota: bool,
     },
-}
-
-#[derive(clap::Subcommand, Debug)]
-enum Susfs {
-    /// Report whether this GKI kernel provides SUSFS
-    Status,
-    /// Show the SUSFS version
-    Version,
-    /// Show enabled SUSFS kernel features
-    Features,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -525,6 +512,11 @@ pub fn run() -> Result<()> {
         crate::resetprop::resetprop_main(&all_args)
     }
 
+    if arg0.ends_with("ksu_susfs") {
+        let all_args: Vec<String> = std::env::args().collect();
+        return crate::android::susfs::cli::run_from_args(&all_args);
+    }
+
     let cli = Args::parse();
 
     log::info!("command: {:?}", cli.command);
@@ -538,24 +530,7 @@ pub fn run() -> Result<()> {
 
         Commands::SoftReboot => init_event::soft_reboot(),
 
-        Commands::Susfs { command } => {
-            match command {
-                Susfs::Status => println!("{}", crate::susfs::version().is_some()),
-                Susfs::Version => {
-                    println!(
-                        "{}",
-                        crate::susfs::version().unwrap_or_else(|| "unsupported".into())
-                    );
-                }
-                Susfs::Features => {
-                    println!(
-                        "{}",
-                        crate::susfs::features().unwrap_or_else(|| "unsupported".into())
-                    );
-                }
-            }
-            Ok(())
-        }
+        Commands::Susfs(args) => crate::android::susfs::cli::run_main(args),
 
         Commands::Insmod { module, params } => debug::insmod(&module, &params),
 

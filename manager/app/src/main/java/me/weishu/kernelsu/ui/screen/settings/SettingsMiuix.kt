@@ -206,6 +206,28 @@ fun SettingPagerMiuix(
                         }
                     }
 
+                    if (uiState.isSusfsSupported) KsuIsValid {
+                        Card(
+                            modifier = Modifier
+                                .padding(top = 12.dp)
+                                .fillMaxWidth(),
+                        ) {
+                            ArrowPreference(
+                                title = stringResource(R.string.susfs_config_title),
+                                summary = stringResource(R.string.settings_susfs_summary),
+                                startAction = {
+                                    Icon(
+                                        Icons.Rounded.Security,
+                                        modifier = Modifier.padding(end = 6.dp),
+                                        contentDescription = stringResource(R.string.susfs_config_title),
+                                        tint = colorScheme.onBackground
+                                    )
+                                },
+                                onClick = actions.onOpenSusfs
+                            )
+                        }
+                    }
+
                     if (uiState.isToolkitInstalled || uiState.isKpatchNextInstalled) KsuIsValid {
                         Card(
                             modifier = Modifier

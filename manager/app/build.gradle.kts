@@ -202,6 +202,8 @@ tasks.named("preBuild") {
 }
 
 dependencies {
+    implementation("androidx.documentfile:documentfile:1.1.0")
+    implementation("com.google.code.gson:gson:2.13.2")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
 

@@ -176,6 +176,21 @@ fun SettingPagerMaterial(
                 )
             }
 
+            if (uiState.isSusfsSupported) KsuIsValid {
+                SegmentedColumn(
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),
+                    content = listOf {
+                        SegmentedListItem(
+                            onClick = actions.onOpenSusfs,
+                            headlineContent = { Text(stringResource(R.string.susfs_config_title)) },
+                            supportingContent = { Text(stringResource(R.string.settings_susfs_summary)) },
+                            leadingContent = { Icon(Icons.Filled.Security, stringResource(R.string.susfs_config_title)) },
+                            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) }
+                        )
+                    }
+                )
+            }
+
             if (uiState.isToolkitInstalled || uiState.isKpatchNextInstalled) KsuIsValid {
                 SegmentedColumn(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),

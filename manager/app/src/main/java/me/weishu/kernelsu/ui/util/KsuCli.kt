@@ -137,6 +137,8 @@ fun getSusfsStatus(): String {
     return ""
 }
 
+fun isSusfsSupported(): Boolean = getSusfsStatus().isNotBlank()
+
 suspend fun getFeatureStatus(feature: String): String = withContext(Dispatchers.IO) {
     val shell = getRootShell()
     val out = shell.newJob()

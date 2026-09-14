@@ -60,6 +60,7 @@ fun SettingPager(
             viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
         },
         onOpenProfileTemplate = { navigator.push(Route.AppProfileTemplate) },
+        onOpenSusfs = { navigator.push(Route.SuSFSConfig) },
         onSetSuCompatMode = viewModel::setSuCompatMode,
         onSetKernelUmountEnabled = viewModel::setKernelUmountEnabled,
         onSetSelinuxHideEnabled = viewModel::setSelinuxHideEnabled,

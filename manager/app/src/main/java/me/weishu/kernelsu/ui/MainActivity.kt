@@ -89,6 +89,7 @@ import me.weishu.kernelsu.ui.screen.modulerepo.ModuleRepoDetailScreen
 import me.weishu.kernelsu.ui.screen.modulerepo.ModuleRepoScreen
 import me.weishu.kernelsu.ui.screen.settings.SettingPager
 import me.weishu.kernelsu.ui.screen.sulog.SulogScreen
+import me.weishu.kernelsu.ui.screen.susfs.SuSFSConfigScreen
 import me.weishu.kernelsu.ui.screen.superuser.SuperUserPager
 import me.weishu.kernelsu.ui.screen.template.AppProfileTemplateScreen
 import me.weishu.kernelsu.ui.screen.templateeditor.TemplateEditorScreen
@@ -242,6 +243,7 @@ open class MainActivity : ComponentActivity() {
                                 entry<Route.SuperUser> { mainScreenEntry() }
                                 entry<Route.Module> { mainScreenEntry() }
                                 entry<Route.Settings> { mainScreenEntry() }
+                                entry<Route.SuSFSConfig> { SuSFSConfigScreen() }
                             }
                         )
                     }
