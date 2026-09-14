@@ -1,4 +1,4 @@
-name: Build Manager
+name: Build KowSU Manager
 
 on:
   push:
