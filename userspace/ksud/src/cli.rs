@@ -542,7 +542,10 @@ pub fn run() -> Result<()> {
             match command {
                 Susfs::Status => println!("{}", crate::susfs::version().is_some()),
                 Susfs::Version => {
-                    println!("{}", crate::susfs::version().unwrap_or_else(|| "unsupported".into()));
+                    println!(
+                        "{}",
+                        crate::susfs::version().unwrap_or_else(|| "unsupported".into())
+                    );
                 }
                 Susfs::Features => {
                     println!(
