@@ -56,3 +56,6 @@ jobs:
             echo 'libc = "0.2"'
           } > "$adapter_dir/Cargo.toml"
           cargo check --manifest-path "$adapter_dir/Cargo.toml" --target aarch64-linux-android
+
+      - name: Check complete KowSU daemon
+        run: cargo check --locked --package ksud --target aarch64-linux-android
