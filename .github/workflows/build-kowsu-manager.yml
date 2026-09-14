@@ -1,0 +1,89 @@
+name: Build KowSU production manager
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/build-kowsu-manager.yml'
+      - 'manager/**'
+      - 'kernel/Kbuild'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kowsu-production-manager-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: manager
+    steps:
+      - name: Checkout KowSU
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure production signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS_VALUE: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD_VALUE: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for value in KEYSTORE_BASE64 STORE_PASSWORD KEY_ALIAS_VALUE KEY_PASSWORD_VALUE; do
+            [[ -n "${!value}" ]] || { echo "Missing Actions secret: $value" >&2; exit 1; }
+          done
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > key.jks
+          chmod 0600 key.jks
+          {
+            printf 'KEYSTORE_FILE=key.jks\n'
+            printf 'KEYSTORE_PASSWORD=%s\n' "$STORE_PASSWORD"
+            printf 'KEY_ALIAS=%s\n' "$KEY_ALIAS_VALUE"
+            printf 'KEY_PASSWORD=%s\n' "$KEY_PASSWORD_VALUE"
+          } >> gradle.properties
+
+          keytool -exportcert -alias "$KEY_ALIAS_VALUE" -keystore key.jks \
+            -storepass "$STORE_PASSWORD" -file manager-cert.der
+          test "$(stat -c%s manager-cert.der)" -eq 1309
+          test "$(sha256sum manager-cert.der | awk '{print $1}')" = \
+            'f5ee4adb0f85b460f31d7acd3cec055011081a9069d30877bc9189fb832a47b6'
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build KowSU release APK
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Verify artifact identity
+        run: |
+          set -euo pipefail
+          apk=$(find app/build/outputs/apk/release -maxdepth 1 -type f \
+            -name 'KowSU_*-release.apk' -print -quit)
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n1)/apksigner" \
+            verify --verbose --print-certs "$apk" | tee apk-signature.txt
+          cp "$apk" KowSU-Manager.apk
+
+      - name: Upload KowSU manager
+        uses: actions/upload-artifact@v4
+        with:
+          name: KowSU-Manager-${{ github.sha }}
+          path: |
+            manager/KowSU-Manager.apk
+            manager/apk-signature.txt
+          if-no-files-found: error
