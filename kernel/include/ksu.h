@@ -8,7 +8,6 @@
 #define KERNEL_SU_VERSION KSU_VERSION
 
 extern struct cred *ksu_cred;
-extern bool ksu_late_loaded;
 extern bool allow_shell;
 #ifdef MODULE
 extern bool ksu_bundled;
