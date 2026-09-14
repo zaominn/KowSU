@@ -1,0 +1,39 @@
+name: Verify GKI compatibility
+
+on:
+  push:
+    branches: [master, susfs]
+    paths:
+      - '.github/workflows/verify-gki-compat.yml'
+      - 'userspace/ksud/**'
+      - 'userspace/ksuinit/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-gki-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ksud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout KowSU
+        uses: actions/checkout@v4
+
+      - name: Configure Rust Android target
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup component add rustfmt
+          rustup target add aarch64-linux-android
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Check KowSU daemon
+        run: cargo check --locked --package ksud --target aarch64-linux-android
