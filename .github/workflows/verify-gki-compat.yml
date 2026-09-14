@@ -37,9 +37,9 @@ jobs:
 
       - name: Verify SUSFS adapter wiring
         run: |
-          rg -q 'mod susfs;' userspace/ksud/src/main.rs
-          rg -q 'Commands::Susfs' userspace/ksud/src/cli.rs
-          rg -q 'susfs version' manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt
+          grep -Fq 'mod susfs;' userspace/ksud/src/main.rs
+          grep -Fq 'Commands::Susfs' userspace/ksud/src/cli.rs
+          grep -Fq 'susfs version' manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt
 
       - name: Check SUSFS adapter for Android
         run: |
