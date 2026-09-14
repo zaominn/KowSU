@@ -68,21 +68,21 @@ static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long 
 
     fd = get_unused_fd_flags(fd_flags);
     if (fd < 0) {
-        pr_err("ksu_install_fd: failed to get unused fd\n");
+        pr_err("ksu_install_fd: failed to get unused fd for %s\n", name);
         kfree(context);
         return fd;
     }
 
     filp = anon_inode_getfile(name, &anon_ksu_fops, context, O_RDWR);
     if (IS_ERR(filp)) {
-        pr_err("ksu_install_fd: failed to create anon inode file\n");
+        pr_err("ksu_install_fd: failed to create anon inode file for %s\n", name);
         put_unused_fd(fd);
         kfree(context);
         return PTR_ERR(filp);
     }
 
     fd_install(fd, filp);
-    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+    pr_info("%s fd installed: %d for pid %d\n", name, fd, current->pid);
     return fd;
 }
 
@@ -118,37 +118,20 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-extern uint32_t ksuver_override;
-extern uint32_t ksuflags_override;
-
-// downstream: make sure to pass arg as reference, this can allow us to extend things.
-static int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg)
+int ksu_supercall_reboot_handler(void __user **arg)
 {
+    struct ksu_install_fd_tw *tw;
 
-    if (magic1 != KSU_INSTALL_MAGIC1)
-    	return 0;
+    tw = kzalloc(sizeof(*tw), GFP_KERNEL);
+    if (!tw)
+        return 0;
 
-    pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1, magic2);
+    tw->outp = (int __user *)(*arg);
+    tw->cb.func = ksu_install_fd_tw_func;
 
-    // arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
-    // downstream: dereference arg as arg4 so we can be inline to upstream
-    void __user *arg4 = (void __user *)*arg;
-
-    // Check if this is a request to install KSU fd
-    if (magic2 == KSU_INSTALL_MAGIC2) {
-        struct ksu_install_fd_tw *tw;
-
-        tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
-        if (!tw)
-            return 0;
-
-        tw->outp = (int __user *)arg4;
-        tw->cb.func = ksu_install_fd_tw_func;
-
-        if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-            kfree(tw);
-            pr_warn("install fd add task_work failed\n");
-        }
+    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+        kfree(tw);
+        pr_warn("install fd add task_work failed\n");
     }
 
     // downstream: extensions go here!
@@ -288,47 +271,12 @@ static int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void 
     return 0;
 }
 
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-    struct pt_regs *real_regs = PT_REAL_REGS(regs);
-    int magic1 = (int)PT_REGS_PARM1(real_regs);
-    int magic2 = (int)PT_REGS_PARM2(real_regs);
-    int cmd = (int)PT_REGS_PARM3(real_regs);
-    void __user **arg = (void __user **)&PT_REGS_SYSCALL_PARM4(real_regs);
-
-    return ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
-
-}
-
-static struct kprobe reboot_kp = {
-    .symbol_name = REBOOT_SYMBOL,
-    .pre_handler = reboot_handler_pre,
-};
-
 void __init ksu_supercalls_init(void)
 {
-    int rc;
-
     ksu_supercall_dump_commands();
-
-    tiny_sulog_init_heap(); // grab heap memory for sulog
-
-    rc = register_kprobe(&reboot_kp);
-    if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
-    } else {
-        pr_info("reboot kprobe registered successfully\n");
-    }
 }
 
 void __exit ksu_supercalls_exit(void)
 {
-    if (sulog_buf_ptr) {
-        memzero_explicit(sulog_buf_ptr, SULOG_BUFSIZ);
-        kfree(sulog_buf_ptr);
-        sulog_buf_ptr = NULL;
-    }
-
-    unregister_kprobe(&reboot_kp);
     ksu_supercall_cleanup_state();
 }
