@@ -32,6 +32,12 @@ jobs:
           rustup component add rustfmt
           rustup target add aarch64-linux-android
 
+      - name: Set up Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r29
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -58,4 +64,8 @@ jobs:
           cargo check --manifest-path "$adapter_dir/Cargo.toml" --target aarch64-linux-android
 
       - name: Check complete KowSU daemon
-        run: cargo check --locked --package ksud --target aarch64-linux-android
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          source .github/scripts/setup-rust-build.sh aarch64-linux-android 26
+          cargo check --locked --package ksud --target aarch64-linux-android
