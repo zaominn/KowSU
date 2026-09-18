@@ -26,6 +26,7 @@ data class SettingsUiState(
     val enableFloatingBottomBarBlur: Boolean = false,
     val enableNavigationBadge: Boolean = true,
     val pageScale: Float = 1.0f,
+    val moduleDescriptionMaxLines: Int = 4,
     val enableWebDebugging: Boolean = false,
 
     // WebUI Modules shortcut entry

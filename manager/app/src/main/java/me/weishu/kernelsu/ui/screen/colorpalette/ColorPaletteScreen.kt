@@ -62,6 +62,7 @@ fun ColorPaletteScreen() {
             activity?.recreate()
         },
         onSetPageScale = viewModel::setPageScale,
+        onSetModuleDescriptionMaxLines = viewModel::setModuleDescriptionMaxLines,
     )
 
     when (LocalUiMode.current) {

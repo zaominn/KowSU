@@ -45,6 +45,7 @@ class SettingsViewModel(
             val enableFloatingBottomBarBlur = repo.enableFloatingBottomBarBlur
             val enableNavigationBadge = repo.enableNavigationBadge
             val pageScale = repo.pageScale
+            val moduleDescriptionMaxLines = repo.moduleDescriptionMaxLines
             val enableWebDebugging = repo.enableWebDebugging
             val enableOfficialLauncher = repo.enableOfficialLauncher
             val classicUi = repo.classicUi
@@ -102,6 +103,7 @@ class SettingsViewModel(
                     enableFloatingBottomBarBlur = enableFloatingBottomBarBlur,
                     enableNavigationBadge = enableNavigationBadge,
                     pageScale = pageScale,
+                    moduleDescriptionMaxLines = moduleDescriptionMaxLines,
                     enableWebDebugging = enableWebDebugging,
                     colorStyle = colorStyle,
                     colorSpec = colorSpec,
@@ -268,6 +270,11 @@ class SettingsViewModel(
     fun setPageScale(scale: Float) {
         repo.pageScale = scale
         _uiState.update { it.copy(pageScale = scale) }
+    }
+
+    fun setModuleDescriptionMaxLines(lines: Int) {
+        repo.moduleDescriptionMaxLines = lines
+        _uiState.update { it.copy(moduleDescriptionMaxLines = lines) }
     }
 
     fun setEnableWebDebugging(enabled: Boolean) {

@@ -54,6 +54,7 @@ import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Pin
@@ -69,12 +70,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -108,6 +107,7 @@ import me.weishu.kernelsu.ui.component.material.expressiveTopAppBarColors
 import me.weishu.kernelsu.ui.theme.ColorMode
 import me.weishu.kernelsu.ui.theme.keyColorOptions
 import me.weishu.kernelsu.ui.theme.rememberKernelSUColorScheme
+import kotlin.math.roundToInt
 
 @Composable
 fun ColorPaletteScreenMaterial(
@@ -418,7 +418,10 @@ fun ColorPaletteScreenMaterial(
 
             item {
                 TonalCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    var sliderValue by remember(uiState.pageScale) { mutableFloatStateOf(uiState.pageScale) }
+                    val sliderState = rememberSliderState(
+                        value = uiState.pageScale,
+                        trackRange = 0.8f..1.1f
+                    )
 
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -449,17 +452,69 @@ fun ColorPaletteScreenMaterial(
                                 )
                             }
                             Text(
-                                text = "${(sliderValue * 100).toInt()}%",
+                                text = "${(sliderState.value * 100).toInt()}%",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
                         Slider(
-                            value = sliderValue,
-                            onValueChange = { sliderValue = it },
-                            onValueChangeFinished = { actions.onSetPageScale(sliderValue) },
-                            valueRange = 0.8f..1.1f,
+                            state = sliderState,
+                            onValueChangeFinished = { actions.onSetPageScale(sliderState.value) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            item {
+                TonalCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    val sliderState = rememberSliderState(
+                        value = uiState.moduleDescriptionMaxLines.toFloat(),
+                        steps = 3,
+                        trackRange = 1f..5f
+                    )
+
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Rounded.Description,
+                                contentDescription = stringResource(id = R.string.settings_module_description_max_lines),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.settings_module_description_max_lines),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = stringResource(id = R.string.settings_module_description_max_lines_summary),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = "${sliderState.value.roundToInt()} " + stringResource(R.string.unit_lines),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Slider(
+                            state = sliderState,
+                            onValueChangeFinished = {
+                                actions.onSetModuleDescriptionMaxLines(sliderState.value.roundToInt())
+                            },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

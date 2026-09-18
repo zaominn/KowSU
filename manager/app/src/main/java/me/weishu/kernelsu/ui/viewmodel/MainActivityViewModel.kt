@@ -50,6 +50,7 @@ class MainActivityViewModel(
             enableFloatingBottomBar = settingRepo.enableFloatingBottomBar,
             enableFloatingBottomBarBlur = settingRepo.enableFloatingBottomBarBlur,
             enableNavigationBadge = settingRepo.enableNavigationBadge,
+            moduleDescriptionMaxLines = settingRepo.moduleDescriptionMaxLines,
             uiMode = UiMode.fromValue(settingRepo.uiMode),
         )
     }
@@ -65,6 +66,7 @@ class MainActivityViewModel(
             "show_switch_icon",
             "scroll_animation",
             "page_scale",
+            "module_description_max_lines",
             "enable_blur",
             "enable_floating_bottom_bar",
             "enable_floating_bottom_bar_blur",
