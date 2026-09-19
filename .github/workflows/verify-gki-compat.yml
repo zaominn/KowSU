@@ -38,6 +38,16 @@ jobs:
         with:
           ndk-version: r29
 
+      - name: Refresh dependency lock for SUSFS port
+        run: cargo generate-lockfile
+
+      - name: Export refreshed dependency lock
+        uses: actions/upload-artifact@v4
+        with:
+          name: susfs-cargo-lock-${{ github.sha }}
+          path: Cargo.lock
+          if-no-files-found: error
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -54,4 +64,4 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
         run: |
           source .github/scripts/setup-rust-build.sh aarch64-linux-android 26
-          cargo check --locked --package ksud --target aarch64-linux-android
+          cargo check --package ksud --target aarch64-linux-android

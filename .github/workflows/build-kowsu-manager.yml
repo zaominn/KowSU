@@ -80,7 +80,8 @@ jobs:
         run: |
           cd ..
           source .github/scripts/setup-rust-build.sh aarch64-linux-android 26
-          cargo build --locked --release --package ksud --target aarch64-linux-android
+          cargo generate-lockfile
+          cargo build --release --package ksud --target aarch64-linux-android
           mkdir -p manager/app/src/main/jniLibs/arm64-v8a
           cp target/aarch64-linux-android/release/ksud manager/app/src/main/jniLibs/arm64-v8a/libksud.so
 
