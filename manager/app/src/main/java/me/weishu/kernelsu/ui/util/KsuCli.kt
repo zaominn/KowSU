@@ -120,7 +120,7 @@ fun execKsud(args: String, newShell: Boolean = false, globalMnt: Boolean = false
  */
 fun getSusfsStatus(): String {
     val commands = listOf(
-        "${getKsuDaemonPath()} susfs version",
+        "${getKsuDaemonPath()} susfs show version",
         "/data/adb/ksu/bin/ksu_susfs show version",
     )
     for (command in commands) {
