@@ -107,6 +107,14 @@ jobs:
             verify --verbose --print-certs "$apk"
           cp "$apk" "$MANAGER_APK"
 
+      - name: Upload KowSU manager APK to workflow
+        uses: actions/upload-artifact@v4
+        with:
+          name: KowSU-Manager-${{ env.MANAGER_VERSION_CODE }}
+          path: manager/${{ env.MANAGER_APK }}
+          if-no-files-found: error
+          compression-level: 0
+
       - name: Publish KowSU manager APK
         env:
           GH_TOKEN: ${{ github.token }}
