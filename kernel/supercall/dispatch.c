@@ -560,10 +560,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
         }
     }
 
-    if (magic2 == KSU_INSTALL_MAGIC2)
-        return ksu_supercall_reboot_handler(arg);
-
-    return -EINVAL;
+    return ksu_supercall_reboot_handler(magic2, cmd, arg);
 }
 
 static int do_nuke_ext4_sysfs(void __user *arg)

@@ -26,5 +26,15 @@ bool ksu_is_su_session_fd(const struct file *filp);
 
 void ksu_supercalls_init(void);
 void ksu_supercalls_exit(void);
-int ksu_supercall_reboot_handler(void __user **arg);
+int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg);
+
+// KowSU legacy reboot-supercall extensions kept alongside the SUSFS dispatcher.
+#define CHANGE_MANAGER_UID 10006
+#define KSU_UMOUNT_GETSIZE 107
+#define KSU_UMOUNT_GETLIST 108
+#define GET_SULOG_DUMP 10009
+#define GET_SULOG_DUMP_V2 10010
+#define CHANGE_KSUVER 10011
+#define CHANGE_SPOOF_UNAME 10012
+#define CHANGE_KSUFLAGS 10013
 #endif // __KSU_H_SUPERCALL

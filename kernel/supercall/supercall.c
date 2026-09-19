@@ -118,20 +118,27 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
     kfree(tw);
 }
 
-int ksu_supercall_reboot_handler(void __user **arg)
+extern uint32_t ksuver_override;
+extern uint32_t ksuflags_override;
+
+int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg)
 {
-    struct ksu_install_fd_tw *tw;
+    if (magic2 == KSU_INSTALL_MAGIC2) {
+        struct ksu_install_fd_tw *tw;
 
-    tw = kzalloc(sizeof(*tw), GFP_KERNEL);
-    if (!tw)
+        tw = kzalloc(sizeof(*tw), GFP_KERNEL);
+        if (!tw)
+            return -ENOMEM;
+
+        tw->outp = (int __user *)(*arg);
+        tw->cb.func = ksu_install_fd_tw_func;
+
+        if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+            kfree(tw);
+            pr_warn("install fd add task_work failed\n");
+            return -EFAULT;
+        }
         return 0;
-
-    tw->outp = (int __user *)(*arg);
-    tw->cb.func = ksu_install_fd_tw_func;
-
-    if (task_work_add(current, &tw->cb, TWA_RESUME)) {
-        kfree(tw);
-        pr_warn("install fd add task_work failed\n");
     }
 
     // downstream: extensions go here!
@@ -273,10 +280,16 @@ int ksu_supercall_reboot_handler(void __user **arg)
 
 void __init ksu_supercalls_init(void)
 {
+    tiny_sulog_init_heap();
     ksu_supercall_dump_commands();
 }
 
 void __exit ksu_supercalls_exit(void)
 {
+    if (sulog_buf_ptr) {
+        memzero_explicit(sulog_buf_ptr, SULOG_BUFSIZ);
+        kfree(sulog_buf_ptr);
+        sulog_buf_ptr = NULL;
+    }
     ksu_supercall_cleanup_state();
 }
