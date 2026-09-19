@@ -2,7 +2,7 @@ name: Build KowSU production manager
 
 on:
   push:
-    branches: [master, feature/susfs-settings]
+    branches: [master]
     paths:
       - '.github/workflows/build-kowsu-manager.yml'
       - 'manager/**'

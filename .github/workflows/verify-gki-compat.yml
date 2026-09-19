@@ -2,7 +2,7 @@ name: Verify GKI compatibility
 
 on:
   push:
-    branches: [master, susfs, feature/susfs-settings]
+    branches: [master, susfs]
     paths:
       - '.github/workflows/verify-gki-compat.yml'
       - 'userspace/ksud/**'
