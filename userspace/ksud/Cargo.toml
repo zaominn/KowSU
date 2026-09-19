@@ -44,6 +44,7 @@ zip-extensions = { version = "0.14", features = [
     "xz",
 ], default-features = false }
 java-properties = { git = "https://github.com/zaominn/java-properties.git", rev = "42a4aa941b70ded2dd3be9e9f892471023e70229", default-features = false }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 encoding_rs = "0.8"
 humansize = "2"
