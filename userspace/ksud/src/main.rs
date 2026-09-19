@@ -10,9 +10,9 @@
     clippy::cast_possible_wrap
 )]
 
-mod apk_sign;
 #[cfg(target_os = "android")]
 mod android;
+mod apk_sign;
 mod assets;
 mod boot_patch;
 #[cfg(target_os = "android")]
