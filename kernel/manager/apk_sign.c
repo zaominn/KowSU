@@ -97,7 +97,11 @@ static bool check_block(struct file *fp, loff_t *pos, loff_t block_end, unsigned
                         const char *expected_sha256)
 {
     loff_t signers_end, signer_end, signed_data_end, digests_end, certificates_end;
+    unsigned char digest[SHA256_DIGEST_SIZE];
+    char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
+    unsigned char *cert;
     u32 certificate_size;
+    bool valid = false;
 
     // v2 block: signers sequence -> first signer -> signed data -> digests
     if (!read_length_prefixed_end(fp, pos, block_end, &signers_end) ||
@@ -114,31 +118,38 @@ static bool check_block(struct file *fp, loff_t *pos, loff_t block_end, unsigned
     if (certificate_size > INT_MAX || certificate_size > (u64)(certificates_end - *pos))
         return false;
 
-#define CERT_MAX_LENGTH 1024
     if (certificate_size != expected_size)
         return false;
 
-    if (certificate_size > CERT_MAX_LENGTH) {
-        pr_info("cert length overlimit\n");
+    /*
+     * The production KowSU signing certificate is 1309 bytes.  Keeping the
+     * certificate in the old 1024-byte stack buffer rejected the genuine
+     * manager before its digest could be checked.  Allocate the exact,
+     * already-bounded certificate length instead.
+     */
+    cert = kmalloc(certificate_size, GFP_KERNEL);
+    if (!cert) {
+        pr_info("can't alloc cert buffer\n");
         return false;
     }
 
-    char cert[CERT_MAX_LENGTH];
     if (!read_exact(fp, cert, certificate_size, pos, certificates_end))
-        return false;
+        goto out;
 
-    unsigned char digest[SHA256_DIGEST_SIZE];
     if (ksu_sha256(cert, certificate_size, digest)) {
         pr_info("sha256 error\n");
-        return false;
+        goto out;
     }
 
-    char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
     hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
 
     bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
     pr_info("sha256: %s, expected: %s\n", hash_str, expected_sha256);
-    return strcmp(expected_sha256, hash_str) == 0;
+    valid = strcmp(expected_sha256, hash_str) == 0;
+
+out:
+    kfree(cert);
+    return valid;
 }
 
 static __always_inline bool check_v2_signature(char *path, unsigned expected_size, const char *expected_sha256)
