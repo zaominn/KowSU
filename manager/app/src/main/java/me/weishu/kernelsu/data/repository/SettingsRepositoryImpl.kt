@@ -77,6 +77,10 @@ class SettingsRepositoryImpl : SettingsRepository {
         get() = prefs.getBoolean("classic_ui", false)
         set(value) = prefs.edit { putBoolean("classic_ui", value) }
 
+    override var simpleMode: Boolean
+        get() = prefs.getBoolean("is_simple_mode", false)
+        set(value) = prefs.edit { putBoolean("is_simple_mode", value) }
+
     override var showSwitchIcon: Boolean
         get() = prefs.getBoolean("show_switch_icon", false)
         set(value) = prefs.edit { putBoolean("show_switch_icon", value) }

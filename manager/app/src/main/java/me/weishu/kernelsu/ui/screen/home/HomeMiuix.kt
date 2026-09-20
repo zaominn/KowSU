@@ -171,12 +171,15 @@ fun HomePagerMiuix(
                         )
                         InfoCard(
                             systemInfo = state.systemInfo,
+                            simpleMode = state.simpleMode,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        SupportLinks(
-                            onOpenUrl = actions.onOpenUrl,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                        if (!state.simpleMode) {
+                            SupportLinks(
+                                onOpenUrl = actions.onOpenUrl,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                         Spacer(
                             Modifier.height(
                                 bottomInnerPadding + if (!Natives.isFullFeatured())
@@ -474,6 +477,7 @@ private fun SupportLinks(
 @Composable
 private fun InfoCard(
     systemInfo: SystemInfo,
+    simpleMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     @Composable
@@ -548,13 +552,16 @@ private fun InfoCard(
                     icon = Icons.Filled.Smartphone,
                     title = stringResource(R.string.home_device_model),
                     content = systemInfo.deviceModel,
+                    bottomPadding = if (simpleMode) 0.dp else 24.dp,
                 )
-                InfoText(
-                    icon = Icons.Filled.Fingerprint,
-                    title = stringResource(R.string.home_fingerprint),
-                    content = systemInfo.fingerprint,
-                    bottomPadding = 0.dp,
-                )
+                if (!simpleMode) {
+                    InfoText(
+                        icon = Icons.Filled.Fingerprint,
+                        title = stringResource(R.string.home_fingerprint),
+                        content = systemInfo.fingerprint,
+                        bottomPadding = 0.dp,
+                    )
+                }
             }
         }
         Card(modifier = Modifier.fillMaxWidth()) {

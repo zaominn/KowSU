@@ -11,6 +11,7 @@ interface SettingsRepository {
     var colorSpec: String
     var enableOfficialLauncher: Boolean
     var classicUi: Boolean
+    var simpleMode: Boolean
     var showSwitchIcon: Boolean
     var scrollAnimation: Boolean
     var enablePredictiveBack: Boolean

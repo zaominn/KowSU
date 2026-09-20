@@ -308,4 +308,6 @@
     <string name="nav_rail_collapse">收起导航栏</string>
     <string name="settings_navigation_badge">导航栏角标</string>
     <string name="settings_navigation_badge_summary">在导航栏显示已授权应用和已启用模块数量</string>
+    <string name="simple_mode">简洁模式</string>
+    <string name="simple_mode_summary">开启后隐藏主页上的非必要卡片和信息</string>
 </resources>

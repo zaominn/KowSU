@@ -48,6 +48,7 @@ class SettingsViewModel(
             val enableWebDebugging = repo.enableWebDebugging
             val enableOfficialLauncher = repo.enableOfficialLauncher
             val classicUi = repo.classicUi
+            val simpleMode = repo.simpleMode
             val showSwitchIcon = repo.showSwitchIcon
             val scrollAnimation = repo.scrollAnimation
             val colorStyle = repo.colorStyle
@@ -92,6 +93,7 @@ class SettingsViewModel(
                     keyColor = keyColor,
                     enableOfficialLauncher = enableOfficialLauncher,
                     classicUi = classicUi,
+                    simpleMode = simpleMode,
                     showSwitchIcon = showSwitchIcon,
                     scrollAnimation = scrollAnimation,
                     enablePredictiveBack = enablePredictiveBack,
@@ -221,6 +223,11 @@ class SettingsViewModel(
     fun setClassicUi(enabled: Boolean) {
         repo.classicUi = enabled
         _uiState.update { it.copy(classicUi = enabled) }
+    }
+
+    fun setSimpleMode(enabled: Boolean) {
+        repo.simpleMode = enabled
+        _uiState.update { it.copy(simpleMode = enabled) }
     }
 
     fun setShowSwitchIcon(enabled: Boolean) {

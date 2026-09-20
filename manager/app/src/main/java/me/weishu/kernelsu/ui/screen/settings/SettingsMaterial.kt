@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.SystemUpdateAlt
+import androidx.compose.material.icons.filled.ViewCompact
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.SnackbarHostState
@@ -150,6 +151,15 @@ fun SettingPagerMaterial(
                                     null
                                 )
                             }
+                        )
+                    }
+                    add {
+                        SegmentedSwitchItem(
+                            icon = Icons.Filled.ViewCompact,
+                            title = stringResource(id = R.string.simple_mode),
+                            summary = stringResource(id = R.string.simple_mode_summary),
+                            checked = uiState.simpleMode,
+                            onCheckedChange = actions.onSetSimpleMode,
                         )
                     }
                 }

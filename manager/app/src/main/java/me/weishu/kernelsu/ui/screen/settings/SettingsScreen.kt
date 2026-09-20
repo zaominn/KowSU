@@ -59,6 +59,7 @@ fun SettingPager(
         onSetUiModeIndex = { index ->
             viewModel.setUiMode(if (index == 0) UiMode.Miuix.value else UiMode.Material.value)
         },
+        onSetSimpleMode = viewModel::setSimpleMode,
         onOpenProfileTemplate = { navigator.push(Route.AppProfileTemplate) },
         onOpenSusfs = { navigator.push(Route.SuSFSConfig) },
         onSetSuCompatMode = viewModel::setSuCompatMode,

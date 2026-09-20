@@ -317,4 +317,6 @@
     <string name="nav_rail_collapse">Collapse navigation rail</string>
     <string name="settings_navigation_badge">Navigation badge</string>
     <string name="settings_navigation_badge_summary">Show granted app and enabled module counts on the navigation bar</string>
+    <string name="simple_mode">Simplicity mode</string>
+    <string name="simple_mode_summary">Hide nonessential cards and details on the home screen</string>
 </resources>
