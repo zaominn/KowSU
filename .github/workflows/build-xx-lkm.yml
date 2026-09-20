@@ -53,7 +53,18 @@ jobs:
         git fetch xx master
         git checkout xx/master
 
-        curl -sSL https://raw.githubusercontent.com/zaominn/files/main/KowSU/xxksu.patch | patch -p1
+        sed -i '/^\/\/ downstream: make sure to pass arg/i #define KSU_GET_LKM_VARIANT 20000\n' \
+          kernel/supercall/supercall.c
+        sed -i '/^[[:space:]]*toolkit_handle_sys_reboot(magic1, magic2, cmd, arg);/i\
+        \tif (magic2 == KSU_GET_LKM_VARIANT && is_manager()) {\
+        \t\tstatic const char variant[] = "xxKSU";\
+        \t\tcopy_to_user(arg4, variant, sizeof(variant));\
+        \t\treturn 0;\
+        \t}\
+        ' kernel/supercall/supercall.c
+
+        grep -q 'KSU_GET_LKM_VARIANT' kernel/supercall/supercall.c
+        grep -q 'static const char variant\[\] = "xxKSU"' kernel/supercall/supercall.c
 
         sed -i "s/CFLAGS_ksu.o += -DKSU_VERSION=.*/CFLAGS_ksu.o += -DKSU_VERSION=${{ steps.version.outputs.KSU_VERSION }}/" kernel/Makefile
 

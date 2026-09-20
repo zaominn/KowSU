@@ -6,7 +6,6 @@
 
 void ksu_setuid_hook_init(void);
 void ksu_setuid_hook_exit(void);
-
-int ksu_handle_setuid(uid_t new_uid, uid_t old_uid);
+int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid);
 
 #endif
