@@ -15,6 +15,8 @@ interface SettingsRepository {
     var showSwitchIcon: Boolean
     var scrollAnimation: Boolean
     var enablePredictiveBack: Boolean
+    var enableSwipeDismiss: Boolean
+    var pagerInterceptionMode: Int
     var enableBlur: Boolean
     var enableFloatingBottomBar: Boolean
     var enableFloatingBottomBarBlur: Boolean
