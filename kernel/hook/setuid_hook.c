@@ -13,6 +13,7 @@
 #include <linux/uidgid.h>
 
 #include "policy/allowlist.h"
+#include "selinux/selinux.h"
 #include "hook/setuid_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
@@ -54,10 +55,10 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
     // we rely on the fact that zygote always call setresuid(3) with same uids
 
 #ifdef CONFIG_KSU_SUSFS
-    if (is_zygote_next(current_cred()))
+    if (susfs_is_current_zygote_next_domain())
         return ksu_handle_zygote_next_setresuid(new_uid);
 
-    if (!is_zygote(current_cred()))
+    if (!susfs_is_current_zygote_domain())
         return 0;
 
     if (is_isolated_process(new_uid) || (is_appuid(new_uid) && ksu_uid_should_umount(new_uid))) {
