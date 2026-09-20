@@ -2,7 +2,7 @@ name: Verify GKI compatibility
 
 on:
   push:
-    branches: [master, susfs]
+    branches: [master]
     paths:
       - '.github/workflows/verify-gki-compat.yml'
       - 'userspace/ksud/**'
@@ -45,7 +45,7 @@ jobs:
         run: |
           grep -Fq 'mod android;' userspace/ksud/src/main.rs
           grep -Fq 'Commands::Susfs' userspace/ksud/src/cli.rs
-          grep -Fq 'susfs version' manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt
+          grep -Fq 'susfs show version' manager/app/src/main/java/me/weishu/kernelsu/ui/util/KsuCli.kt
           grep -Fq 'SUSFS_CONFIG' userspace/ksud/src/defs.rs
           grep -Fq 'on_post_fs_data' userspace/ksud/src/init_event.rs
 
