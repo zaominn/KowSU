@@ -9,6 +9,9 @@
 #include <linux/syscalls.h>
 #include <linux/task_work.h>
 #include <linux/uaccess.h>
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif
 #include <linux/version.h>
 
 #include <linux/utsname.h> // utsname() and uts_sem
@@ -68,21 +71,21 @@ static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long 
 
     fd = get_unused_fd_flags(fd_flags);
     if (fd < 0) {
-        pr_err("ksu_install_fd: failed to get unused fd for %s\n", name);
+        pr_err("ksu_install_fd: failed to get unused fd\n");
         kfree(context);
         return fd;
     }
 
     filp = anon_inode_getfile(name, &anon_ksu_fops, context, O_RDWR);
     if (IS_ERR(filp)) {
-        pr_err("ksu_install_fd: failed to create anon inode file for %s\n", name);
+        pr_err("ksu_install_fd: failed to create anon inode file\n");
         put_unused_fd(fd);
         kfree(context);
         return PTR_ERR(filp);
     }
 
     fd_install(fd, filp);
-    pr_info("%s fd installed: %d for pid %d\n", name, fd, current->pid);
+    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
     return fd;
 }
 
@@ -121,24 +124,102 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
 extern uint32_t ksuver_override;
 extern uint32_t ksuflags_override;
 
-int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg)
+// downstream: make sure to pass arg as reference, this can allow us to extend things.
+static int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg)
 {
+
+    if (magic1 != KSU_INSTALL_MAGIC1)
+        return 0;
+
+    pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1, magic2);
+
+    // arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+    // downstream: dereference arg as arg4 so we can be inline to upstream
+    void __user *arg4 = (void __user *)*arg;
+
+#ifdef CONFIG_KSU_SUSFS
+    if (magic2 == SUSFS_MAGIC && current_uid().val == 0) {
+        switch (cmd) {
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+        case CMD_SUSFS_ADD_SUS_PATH:
+            susfs_add_sus_path(arg);
+            return 0;
+        case CMD_SUSFS_ADD_SUS_PATH_LOOP:
+            susfs_add_sus_path_loop(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+        case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
+            susfs_set_hide_sus_mnts_for_non_su_procs(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
+        case CMD_SUSFS_ADD_SUS_KSTAT:
+        case CMD_SUSFS_ADD_SUS_KSTAT_STATICALLY:
+            susfs_add_sus_kstat(arg);
+            return 0;
+        case CMD_SUSFS_UPDATE_SUS_KSTAT:
+            susfs_update_sus_kstat(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+        case CMD_SUSFS_SET_UNAME:
+            susfs_set_uname(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
+        case CMD_SUSFS_ENABLE_LOG:
+            susfs_enable_log(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+        case CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG:
+            susfs_set_cmdline_or_bootconfig(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
+        case CMD_SUSFS_ADD_OPEN_REDIRECT:
+            susfs_add_open_redirect(arg);
+            return 0;
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_MAP
+        case CMD_SUSFS_ADD_SUS_MAP:
+            susfs_add_sus_map(arg);
+            return 0;
+#endif
+        case CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING:
+            susfs_set_avc_log_spoofing(arg);
+            return 0;
+        case CMD_SUSFS_SHOW_ENABLED_FEATURES:
+            susfs_get_enabled_features(arg);
+            return 0;
+        case CMD_SUSFS_SHOW_VARIANT:
+            susfs_show_variant(arg);
+            return 0;
+        case CMD_SUSFS_SHOW_VERSION:
+            susfs_show_version(arg);
+            return 0;
+        default:
+            return -EINVAL;
+        }
+    }
+#endif
+
+    // Check if this is a request to install KSU fd
     if (magic2 == KSU_INSTALL_MAGIC2) {
         struct ksu_install_fd_tw *tw;
 
-        tw = kzalloc(sizeof(*tw), GFP_KERNEL);
+        tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
         if (!tw)
-            return -ENOMEM;
+            return 0;
 
-        tw->outp = (int __user *)(*arg);
+        tw->outp = (int __user *)arg4;
         tw->cb.func = ksu_install_fd_tw_func;
 
         if (task_work_add(current, &tw->cb, TWA_RESUME)) {
             kfree(tw);
             pr_warn("install fd add task_work failed\n");
-            return -EFAULT;
         }
-        return 0;
     }
 
     // downstream: extensions go here!
@@ -189,7 +270,7 @@ int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg
 
     // WARNING!!! triple ptr zone! ***
     if (magic2 == CHANGE_SPOOF_UNAME) {
-        // only root is allowed for this command 
+        // only root is allowed for this command
         if (current_uid().val != 0)
             return 0;
 
@@ -225,12 +306,12 @@ int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg
         // for release
         if (strncpy_from_user(release_buf, (char __user *)u_ptr, sizeof(release_buf)) < 0)
             return 0;
-        release_buf[sizeof(release_buf) - 1] = '\0'; 
+        release_buf[sizeof(release_buf) - 1] = '\0';
 
         // for version
         if (strncpy_from_user(version_buf, (char __user *)(u_ptr + strlen(release_buf) + 1), sizeof(version_buf)) < 0)
             return 0;
-        version_buf[sizeof(version_buf) - 1] = '\0'; 
+        version_buf[sizeof(version_buf) - 1] = '\0';
 
         if (original_release_buf[0] == '\0') {
             struct new_utsname *u_curr = utsname();
@@ -278,10 +359,37 @@ int ksu_supercall_reboot_handler(int magic2, unsigned int cmd, void __user **arg
     return 0;
 }
 
+static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+    struct pt_regs *real_regs = PT_REAL_REGS(regs);
+    int magic1 = (int)PT_REGS_PARM1(real_regs);
+    int magic2 = (int)PT_REGS_PARM2(real_regs);
+    int cmd = (int)PT_REGS_PARM3(real_regs);
+    void __user **arg = (void __user **)&PT_REGS_SYSCALL_PARM4(real_regs);
+
+    return ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
+
+}
+
+static struct kprobe reboot_kp = {
+    .symbol_name = REBOOT_SYMBOL,
+    .pre_handler = reboot_handler_pre,
+};
+
 void __init ksu_supercalls_init(void)
 {
-    tiny_sulog_init_heap();
+    int rc;
+
     ksu_supercall_dump_commands();
+
+    tiny_sulog_init_heap(); // grab heap memory for sulog
+
+    rc = register_kprobe(&reboot_kp);
+    if (rc) {
+        pr_err("reboot kprobe failed: %d\n", rc);
+    } else {
+        pr_info("reboot kprobe registered successfully\n");
+    }
 }
 
 void __exit ksu_supercalls_exit(void)
@@ -291,5 +399,7 @@ void __exit ksu_supercalls_exit(void)
         kfree(sulog_buf_ptr);
         sulog_buf_ptr = NULL;
     }
+
+    unregister_kprobe(&reboot_kp);
     ksu_supercall_cleanup_state();
 }
