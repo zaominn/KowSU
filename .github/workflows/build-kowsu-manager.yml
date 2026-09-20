@@ -159,6 +159,7 @@ jobs:
               --target "$GITHUB_SHA" \
               --title "KowSU Manager ${MANAGER_VERSION_NAME} (${MANAGER_VERSION_CODE})" \
               --notes "Production-signed KowSU Manager APK with bundled ksud, LKM assets, and ksuinit."
+          fi
 
   cleanup-intermediate-artifacts:
     if: always()
@@ -177,4 +178,3 @@ jobs:
             [ -n "$artifact_id" ] || continue
             gh api --method DELETE "/repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}"
           done
-          fi
