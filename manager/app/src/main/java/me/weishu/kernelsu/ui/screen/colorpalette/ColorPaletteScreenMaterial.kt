@@ -61,6 +61,7 @@ import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.ToggleOn
 import androidx.compose.material.icons.rounded.ViewCarousel
+import androidx.compose.material.icons.rounded.ViewCompact
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -335,6 +336,15 @@ fun ColorPaletteScreenMaterial(
                                 onCheckedChange = {
                                     actions.onSetClassicUi(it)
                                 }
+                            )
+                        },
+                        {
+                            SegmentedSwitchItem(
+                                icon = Icons.Rounded.ViewCompact,
+                                title = stringResource(R.string.simple_mode),
+                                summary = stringResource(R.string.simple_mode_summary),
+                                checked = uiState.simpleMode,
+                                onCheckedChange = actions.onSetSimpleMode,
                             )
                         },
                         {

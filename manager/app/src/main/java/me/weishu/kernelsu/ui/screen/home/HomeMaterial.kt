@@ -139,7 +139,7 @@ fun HomePagerMaterial(
                 state = state,
                 actions = actions,
             )
-            InfoCard(systemInfo = state.systemInfo, simpleMode = state.simpleMode)
+            InfoCard(systemInfo = state.systemInfo)
             if (!state.simpleMode) {
                 SupportLinks(onOpenUrl = actions.onOpenUrl)
             }
@@ -574,11 +574,10 @@ private fun SupportLinkContent(title: String, description: String) {
 @Composable
 private fun InfoCard(
     systemInfo: SystemInfo,
-    simpleMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     if (LocalClassicUi.current) {
-        ClassicInfoCard(systemInfo, simpleMode, modifier)
+        ClassicInfoCard(systemInfo, modifier)
         return
     }
     @Composable
@@ -642,7 +641,7 @@ private fun InfoCard(
                     content = systemInfo.deviceModel,
                 )
             }
-            item(visible = !simpleMode) {
+            item {
                 InfoCardItem(
                     icon = Icons.Filled.Fingerprint,
                     label = stringResource(R.string.home_fingerprint),
@@ -672,7 +671,6 @@ private fun InfoCard(
 @Composable
 private fun ClassicInfoCard(
     systemInfo: SystemInfo,
-    simpleMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val selinuxDisplay = when (systemInfo.selinuxStatus) {
@@ -698,9 +696,7 @@ private fun ClassicInfoCard(
             ClassicInfoCardItem(stringResource(R.string.home_kernel), systemInfo.kernelVersion)
             ClassicInfoCardItem(stringResource(R.string.home_device_model), systemInfo.deviceModel)
             ClassicInfoCardItem(stringResource(R.string.home_manager_version), systemInfo.managerVersion)
-            if (!simpleMode) {
-                ClassicInfoCardItem(stringResource(R.string.home_fingerprint), systemInfo.fingerprint)
-            }
+            ClassicInfoCardItem(stringResource(R.string.home_fingerprint), systemInfo.fingerprint)
             ClassicInfoCardItem(stringResource(R.string.home_selinux_status), selinuxDisplay)
             ClassicInfoCardItem(stringResource(R.string.home_seccomp_status), seccompDisplay)
         }

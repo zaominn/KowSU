@@ -36,7 +36,6 @@ import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.SystemUpdateAlt
-import androidx.compose.material.icons.rounded.ViewCompact
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -181,20 +180,6 @@ fun SettingPagerMiuix(
                                 )
                             },
                             onClick = actions.onOpenTheme
-                        )
-                        SwitchPreference(
-                            title = stringResource(id = R.string.simple_mode),
-                            summary = stringResource(id = R.string.simple_mode_summary),
-                            startAction = {
-                                Icon(
-                                    Icons.Rounded.ViewCompact,
-                                    modifier = Modifier.padding(end = 6.dp),
-                                    contentDescription = stringResource(id = R.string.simple_mode),
-                                    tint = colorScheme.onBackground,
-                                )
-                            },
-                            checked = uiState.simpleMode,
-                            onCheckedChange = actions.onSetSimpleMode,
                         )
                     }
 

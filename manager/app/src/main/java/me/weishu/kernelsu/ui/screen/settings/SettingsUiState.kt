@@ -77,7 +77,6 @@ data class SettingsScreenActions(
     val onSetCheckModuleUpdate: (Boolean) -> Unit,
     val onOpenTheme: () -> Unit,
     val onSetUiModeIndex: (Int) -> Unit,
-    val onSetSimpleMode: (Boolean) -> Unit,
     val onOpenProfileTemplate: () -> Unit,
     val onOpenSusfs: () -> Unit,
     val onSetSuCompatMode: (Int) -> Unit,

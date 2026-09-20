@@ -25,6 +25,7 @@ data class ColorPaletteScreenActions(
     val onSetColorSpec: (String) -> Unit,
     val onSetEnableOfficialLauncher: (Boolean) -> Unit,
     val onSetClassicUi: (Boolean) -> Unit,
+    val onSetSimpleMode: (Boolean) -> Unit,
     val onSetShowSwitchIcon: (Boolean) -> Unit,
     val onSetScrollAnimation: (Boolean) -> Unit,
     val onSetEnableBlur: (Boolean) -> Unit,

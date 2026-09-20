@@ -171,7 +171,6 @@ fun HomePagerMiuix(
                         )
                         InfoCard(
                             systemInfo = state.systemInfo,
-                            simpleMode = state.simpleMode,
                             modifier = Modifier.fillMaxWidth(),
                         )
                         if (!state.simpleMode) {
@@ -477,7 +476,6 @@ private fun SupportLinks(
 @Composable
 private fun InfoCard(
     systemInfo: SystemInfo,
-    simpleMode: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     @Composable
@@ -552,16 +550,13 @@ private fun InfoCard(
                     icon = Icons.Filled.Smartphone,
                     title = stringResource(R.string.home_device_model),
                     content = systemInfo.deviceModel,
-                    bottomPadding = if (simpleMode) 0.dp else 24.dp,
                 )
-                if (!simpleMode) {
-                    InfoText(
-                        icon = Icons.Filled.Fingerprint,
-                        title = stringResource(R.string.home_fingerprint),
-                        content = systemInfo.fingerprint,
-                        bottomPadding = 0.dp,
-                    )
-                }
+                InfoText(
+                    icon = Icons.Filled.Fingerprint,
+                    title = stringResource(R.string.home_fingerprint),
+                    content = systemInfo.fingerprint,
+                    bottomPadding = 0.dp,
+                )
             }
         }
         Card(modifier = Modifier.fillMaxWidth()) {

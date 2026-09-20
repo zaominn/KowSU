@@ -45,6 +45,7 @@ import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
 import androidx.compose.material.icons.rounded.ViewCarousel
+import androidx.compose.material.icons.rounded.ViewCompact
 import androidx.compose.material.icons.rounded.Wallpaper
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.runtime.Composable
@@ -295,6 +296,20 @@ fun ColorPaletteScreenMiuix(
                             .padding(top = 12.dp)
                             .fillMaxWidth(),
                     ) {
+                        SwitchPreference(
+                            title = stringResource(id = R.string.simple_mode),
+                            summary = stringResource(id = R.string.simple_mode_summary),
+                            startAction = {
+                                Icon(
+                                    Icons.Rounded.ViewCompact,
+                                    modifier = Modifier.padding(end = 6.dp),
+                                    contentDescription = stringResource(id = R.string.simple_mode),
+                                    tint = colorScheme.onBackground,
+                                )
+                            },
+                            checked = uiState.simpleMode,
+                            onCheckedChange = actions.onSetSimpleMode,
+                        )
                         SwitchPreference(
                             title = stringResource(id = R.string.settings_official_icon),
                             startAction = {
