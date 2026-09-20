@@ -20,6 +20,7 @@
 #include "manager/manager_identity.h"
 #include "selinux/selinux.h"
 #include "infra/file_wrapper.h"
+#include "hook/tp_marker.h"
 #include "policy/app_profile.h"
 #include "sulog/event.h"
 #include "sulog/fd.h"
