@@ -11,7 +11,9 @@
 #include <linux/version.h>
 #include <linux/sched/task_stack.h>
 #include <linux/ptrace.h>
+#ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs_def.h>
+#endif
 #include <linux/namei.h>
 #include <linux/minmax.h>
 #include <linux/fs_struct.h>
@@ -142,8 +144,10 @@ int ksu_handle_execveat_init(struct filename *filename, struct user_arg_ptr *arg
     }
 
     if (likely(!strstr(filename->name, "/app_process") && !strstr(filename->name, "/adbd") && !strstr(filename->name, "/stub_zygote"))) {
+#ifdef CONFIG_KSU_SUSFS
         pr_info("susfs: mark no sucompat checks for pid: '%d', exec: '%s'\n", current->pid, filename->name);
         susfs_set_current_proc_no_su();
+#endif
         // - marking proc umounted here is useless because only zygote spawned processes will umount
         //   the sus mounts, tho other susfs features still rely on proc_umounted check, but
         //   it is fine to not spoof for init spawned processes.

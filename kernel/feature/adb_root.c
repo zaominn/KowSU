@@ -10,7 +10,6 @@
 #include <linux/static_key.h>
 #include <linux/slab.h>
 #include <linux/sched/task_stack.h>
-#include <linux/susfs_def.h>
 
 #include "adb_root.h"
 #include "arch.h"
@@ -24,11 +23,14 @@ DEFINE_STATIC_KEY_FALSE(ksu_adb_root);
 
 static inline long is_exec_adbd(const char *filename)
 {
-    if (strstr(filename, "adbd"))
-        pr_info("is_exec_adbd() => filename: %s\n", filename);
+    static const char suffix[] = "/adbd";
+    size_t filename_len = strlen(filename);
+    size_t suffix_len = sizeof(suffix) - 1;
 
-    return (susfs_starts_with(filename, "/apex/") &&
-                susfs_ends_with(filename, "/adbd"));
+    if (filename_len < suffix_len || strncmp(filename, "/apex/", 6) != 0)
+        return 0;
+
+    return strcmp(filename + filename_len - suffix_len, suffix) == 0;
 }
 
 static long is_libadbroot_ok(void)

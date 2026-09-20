@@ -6,7 +6,9 @@
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 #include <linux/moduleparam.h>
+#ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs.h>
+#endif
 
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"

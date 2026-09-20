@@ -5,7 +5,9 @@
 #include <linux/version.h>
 #include <linux/thread_info.h>
 #include <linux/namei.h>
+#ifdef CONFIG_KSU_SUSFS
 #include <linux/susfs.h>
+#endif
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
 #include "arch.h" // IWYU pragma: keep
@@ -129,7 +131,9 @@ static int do_report_event(void __user *arg)
             boot_complete_lock = true;
             pr_info("boot_complete triggered\n");
             on_boot_completed();
+#ifdef CONFIG_KSU_SUSFS
             susfs_start_sdcard_monitor_fn();
+#endif
         }
         break;
     }
@@ -451,25 +455,48 @@ static int do_manage_mark(void __user *arg)
 
     switch (cmd.operation) {
         case KSU_MARK_GET: {
+#ifdef CONFIG_KSU_SUSFS
             if (susfs_is_current_proc_no_su()) {
                 ret = 0; // SYSCALL_TRACEPOINT is NOT flagged
             } else {
                 ret = 1; // SYSCALL_TRACEPOINT is flagged
             }
+#else
+            ret = ksu_get_task_mark(cmd.pid);
+            if (ret < 0)
+                return ret;
+#endif
             cmd.result = (u32)ret;
             break;
         }
         case KSU_MARK_MARK: {
+#ifdef CONFIG_KSU_SUSFS
             if (cmd.pid != 0)
                 return ret;
+#else
+            if (cmd.pid == 0)
+                ksu_mark_all_process();
+            else if ((ret = ksu_set_task_mark(cmd.pid, true)) < 0)
+                return ret;
+#endif
             break;
         }
         case KSU_MARK_UNMARK: {
+#ifdef CONFIG_KSU_SUSFS
             if (cmd.pid != 0)
                 return ret;
+#else
+            if (cmd.pid == 0)
+                ksu_unmark_all_process();
+            else if ((ret = ksu_set_task_mark(cmd.pid, false)) < 0)
+                return ret;
+#endif
             break;
         }
         case KSU_MARK_REFRESH: {
+#ifndef CONFIG_KSU_SUSFS
+            ksu_mark_running_process();
+#endif
             break;
         }
         default: {
@@ -491,6 +518,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
         return -EINVAL;
     }
 
+#ifdef CONFIG_KSU_SUSFS
     // If magic2 is susfs and current process is root
     if (magic2 == SUSFS_MAGIC && current_uid().val == 0) {
         switch(cmd) {
@@ -559,6 +587,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
                 return -EINVAL;
         }
     }
+#endif
 
     return ksu_supercall_reboot_handler(magic2, cmd, arg);
 }
