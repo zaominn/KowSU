@@ -336,7 +336,7 @@ fun ColorPaletteScreenMaterial(
                 )
 
                 SegmentedColumn(
-                    modifier = Modifier.padding(top = 4.dp),
+                    modifier = Modifier.padding(start = 16.dp, top = 4.dp, end = 16.dp),
                     content = listOf(
                         {
                             SegmentedSwitchItem(
