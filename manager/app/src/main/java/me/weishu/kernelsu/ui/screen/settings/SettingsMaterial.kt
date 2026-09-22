@@ -190,7 +190,6 @@ fun SettingPagerMaterial(
                     }
                 )
             }
-
             if (uiState.isToolkitInstalled || uiState.isKpatchNextInstalled) KsuIsValid {
                 SegmentedColumn(
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 13.dp),

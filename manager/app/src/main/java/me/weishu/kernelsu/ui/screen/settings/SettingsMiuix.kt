@@ -227,7 +227,6 @@ fun SettingPagerMiuix(
                             )
                         }
                     }
-
                     if (uiState.isToolkitInstalled || uiState.isKpatchNextInstalled) KsuIsValid {
                         Card(
                             modifier = Modifier
