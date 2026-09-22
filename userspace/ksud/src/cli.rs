@@ -528,7 +528,7 @@ pub fn run() -> Result<()> {
             Ok(())
         }
 
-        Commands::SoftReboot => init_event::soft_reboot(),
+        Commands::SoftReboot => crate::soft_reboot::soft_reboot(),
 
         Commands::Susfs(args) => crate::android::susfs::cli::run_main(args),
 
