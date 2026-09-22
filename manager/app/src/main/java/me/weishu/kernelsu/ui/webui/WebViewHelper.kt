@@ -33,7 +33,6 @@ import java.io.File
 private const val WEB_DOMAIN = "mui.kernelsu.org"
 private const val KSU_SCHEME = "ksu"
 private const val ICON_HOST = "icon"
-
 private fun loadDownloadJs(context: Context): String {
     return context.assets.open("webview/download.js").bufferedReader(Charsets.UTF_8).use { it.readText() }
 }

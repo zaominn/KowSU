@@ -40,14 +40,10 @@ enum class DownloadCompletionAction {
     OPEN_FILE,
 }
 
-internal fun resolveDownloadMimeType(fileName: String, providedMimeType: String?): String {
-    val explicitMimeType = providedMimeType?.trim().orEmpty()
-    if (explicitMimeType.isNotEmpty()) {
-        return explicitMimeType
-    }
-
-    return URLConnection.guessContentTypeFromName(fileName) ?: "application/octet-stream"
-}
+internal fun resolveDownloadMimeType(fileName: String, providedMimeType: String?): String =
+    providedMimeType?.trim()?.takeIf { it.isNotEmpty() }
+        ?: URLConnection.guessContentTypeFromName(fileName)
+        ?: "application/octet-stream"
 
 class DownloadService : Service() {
 
@@ -97,7 +93,7 @@ class DownloadService : Service() {
                 val cookie = intent.getStringExtra(EXTRA_COOKIE)
                 val userAgent = intent.getStringExtra(EXTRA_USER_AGENT)
                 val completionAction = intent.getStringExtra(EXTRA_COMPLETION_ACTION)
-                    ?.let(DownloadCompletionAction::valueOf)
+                    ?.let { runCatching { DownloadCompletionAction.valueOf(it) }.getOrNull() }
                     ?: DownloadCompletionAction.INSTALL_MODULE
                 if (downloadId == -1) return START_NOT_STICKY
 
