@@ -59,10 +59,10 @@ import androidx.compose.material.icons.rounded.DesignServices
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Pin
 import androidx.compose.material.icons.rounded.Style
+import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material.icons.rounded.ToggleOn
 import androidx.compose.material.icons.rounded.ViewCarousel
 import androidx.compose.material.icons.rounded.ViewCompact
-import androidx.compose.material.icons.rounded.Swipe
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeFlexibleTopAppBar
@@ -334,7 +334,9 @@ fun ColorPaletteScreenMaterial(
                         },
                     )
                 )
+            }
 
+            item {
                 SegmentedColumn(
                     modifier = Modifier.padding(start = 16.dp, top = 4.dp, end = 16.dp),
                     content = listOf(

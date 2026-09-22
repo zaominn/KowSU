@@ -295,7 +295,12 @@ fun MainScreen(
     )
     mainPagerState.usePager = scrollAnimation
     val isFullFeatured = Natives.isFullFeatured()
-    val pagerMode = PagerInterceptionMode.entries.getOrElse(pagerInterceptionMode) {
+    // Pager interception is only available while the scrollable pager is enabled.
+    val pagerMode = if (scrollAnimation) {
+        PagerInterceptionMode.entries.getOrElse(pagerInterceptionMode) {
+            PagerInterceptionMode.Native
+        }
+    } else {
         PagerInterceptionMode.Native
     }
     val interceptPagerGestures = pagerMode == PagerInterceptionMode.CrossAxisInterceptor
@@ -395,13 +400,12 @@ fun MainScreen(
             Box(modifier = if (blurBackdrop != null) Modifier.layerBackdrop(blurBackdrop) else Modifier) {
                 if (scrollAnimation) {
                     HorizontalPager(
-                        modifier = Modifier
+                        modifier = mainModifier
                             .pagerGestureOverride(
                                 pagerState = mainPagerState.pagerState,
                                 mode = pagerMode,
                                 enabled = userScrollEnabled,
-                            )
-                            .then(mainModifier),
+                            ),
                         state = mainPagerState.pagerState,
                         beyondViewportPageCount = if (contentReady) 3 else 0,
                         overscrollEffect = null,
