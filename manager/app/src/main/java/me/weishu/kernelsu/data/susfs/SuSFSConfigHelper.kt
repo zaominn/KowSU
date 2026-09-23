@@ -25,6 +25,7 @@ object SuSFSConfigHelper {
     @Volatile
     private var cachedStatusInfo: SuSFSStatusInfo? = null
 
+    private val configMutex = Mutex()
     private val statusInfoMutex = Mutex()
 
     private data class CommandResult(
@@ -33,7 +34,11 @@ object SuSFSConfigHelper {
         val stderr: String,
     )
 
-    suspend fun loadConfig(): SuSFSConfig = withContext(Dispatchers.IO) {
+    suspend fun loadConfig(): SuSFSConfig = configMutex.withLock {
+        loadConfigLocked()
+    }
+
+    private suspend fun loadConfigLocked(): SuSFSConfig = withContext(Dispatchers.IO) {
         cachedConfig?.let { return@withContext it }
 
         val result = executeSusfsCommand("config list_all")
@@ -59,9 +64,9 @@ object SuSFSConfigHelper {
         }
     }
 
-    suspend fun refreshConfig(): SuSFSConfig {
+    suspend fun refreshConfig(): SuSFSConfig = configMutex.withLock {
         cachedConfig = null
-        return loadConfig()
+        loadConfigLocked()
     }
 
     suspend fun restoreDefaultConfig(): Boolean {
@@ -189,6 +194,23 @@ object SuSFSConfigHelper {
         )
     }
 
+    suspend fun loadSlotInfo(): List<SuSFSSlotInfo>? {
+        val result = executeSusfsCommand("slot_info")
+        if (!result.success || result.stdout.isBlank()) {
+            Log.e(TAG, "Failed to load SUSFS slot info: ${result.stderr}")
+            return null
+        }
+
+        return try {
+            val slots = checkNotNull(gson.fromJson(result.stdout, Array<SuSFSSlotInfo>::class.java))
+            check(slots.all { it.slotName.isNotBlank() && it.uname.isNotBlank() && it.buildTime.isNotBlank() })
+            slots.toList()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to parse SUSFS slot info", e)
+            null
+        }
+    }
+
     suspend fun enableLog(enabled: Boolean): Boolean {
         return executeConfigMutation(
             command = "logging ${if (enabled) "add" else "remove"}",
@@ -311,7 +333,7 @@ object SuSFSConfigHelper {
     private suspend fun executeConfigMutation(
         command: String,
         currentKernelCommands: List<String> = emptyList(),
-    ): Boolean {
+    ): Boolean = configMutex.withLock {
         currentKernelCommands.forEach { currentKernelCommand ->
             val result = executeSusfsCommand(currentKernelCommand)
             if (!result.success) {
@@ -319,17 +341,18 @@ object SuSFSConfigHelper {
                     TAG,
                     "SUSFS kernel command failed: $currentKernelCommand: ${result.stderr}"
                 )
-                return false
+                return@withLock false
             }
         }
 
         val result = executeSusfsCommand("config $command")
         if (result.success) {
             cachedConfig = null
+            cachedStatusInfo = null
         } else {
             Log.e(TAG, "SUSFS config command failed: $command: ${result.stderr}")
         }
-        return result.success
+        result.success
     }
 
     private suspend fun executeSusfsCommand(command: String): CommandResult =
@@ -397,6 +420,15 @@ data class UnameConfig(
     val version: String,
     @SerializedName("release")
     val release: String,
+)
+
+data class SuSFSSlotInfo(
+    @SerializedName("slot_name")
+    val slotName: String,
+    @SerializedName("uname")
+    val uname: String,
+    @SerializedName("build_time")
+    val buildTime: String,
 )
 
 data class SuSFSStatusInfo(
