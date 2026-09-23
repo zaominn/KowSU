@@ -50,6 +50,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import me.weishu.kernelsu.R
 import me.weishu.kernelsu.data.susfs.SuSFSConfigHelper
+import me.weishu.kernelsu.ui.LocalUiMode
+import me.weishu.kernelsu.ui.UiMode
 import me.weishu.kernelsu.ui.component.SwipeableSnackbarHost
 import me.weishu.kernelsu.ui.component.settings.AppBackButton
 import me.weishu.kernelsu.ui.navigation3.LocalNavigator
@@ -65,6 +67,7 @@ import me.weishu.kernelsu.ui.theme.blurEffect
 import me.weishu.kernelsu.ui.theme.blurSource
 import me.weishu.kernelsu.ui.util.LocalSnackbarHost
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private class SuSFSConfigSubpage(
     val requirePersist: Boolean,
@@ -76,6 +79,10 @@ private class SuSFSConfigSubpage(
 @Composable
 fun SuSFSConfigScreen() {
     val navigator = LocalNavigator.current
+    val pageBackground = when (LocalUiMode.current) {
+        UiMode.Material -> MaterialTheme.colorScheme.surfaceContainer
+        UiMode.Miuix -> MiuixTheme.colorScheme.background
+    }
     val snackBarHost = remember { SnackbarHostState() }
     val topAppBarState = rememberTopAppBarState()
     val coroutineScope = rememberCoroutineScope()
@@ -211,6 +218,7 @@ fun SuSFSConfigScreen() {
 
     CompositionLocalProvider(LocalSnackbarHost provides snackBarHost) {
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             Column(modifier = Modifier.blurEffect()) {
                 LargeFlexibleTopAppBar(
@@ -282,7 +290,7 @@ fun SuSFSConfigScreen() {
                 }
             }
         },
-        containerColor = Color.Transparent,
+        containerColor = pageBackground,
         contentColor = MaterialTheme.colorScheme.onSurface,
         contentWindowInsets = WindowInsets.safeDrawing.only(
             WindowInsetsSides.Top + WindowInsetsSides.Horizontal
