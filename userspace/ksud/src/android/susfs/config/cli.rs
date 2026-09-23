@@ -157,21 +157,28 @@ enum BooleanField {
 
 pub fn run(command: ConfigCommand) -> Result<()> {
     match command {
-        ConfigCommand::Enable => update_config(|config| {
-            config.set_enabled(true);
-            Ok(())
-        }),
-        ConfigCommand::Disable => update_config(|config| {
-            config.set_enabled(false);
-            Ok(())
-        }),
+        ConfigCommand::Enable => {
+            update_config(|config| {
+                config.set_enabled(true);
+                Ok(())
+            })?;
+            crate::assets::reconcile_susfs_link()
+        }
+        ConfigCommand::Disable => {
+            update_config(|config| {
+                config.set_enabled(false);
+                Ok(())
+            })?;
+            crate::assets::reconcile_susfs_link()
+        }
         ConfigCommand::ListAll | ConfigCommand::Backup => print_json(&Config::read_or_default()),
         ConfigCommand::Restore { path } => {
             let config = match path {
                 Some(path) => Config::read_from(path)?,
                 None => Config::default(),
             };
-            config.save()
+            config.save()?;
+            crate::assets::reconcile_susfs_link()
         }
         ConfigCommand::CmdlineOrBootconfig { command } => run_string(command),
         ConfigCommand::AvcLogSpoofing { command } => {

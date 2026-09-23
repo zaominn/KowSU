@@ -4,14 +4,54 @@ use rust_embed::RustEmbed;
 #[cfg(target_os = "android")]
 mod android {
     use crate::assets::Asset;
-    use crate::defs::BINARY_DIR;
+    use crate::defs::{BINARY_DIR, DAEMON_PATH};
     use crate::utils::ensure_binary;
     use const_format::concatcp;
+    use std::os::unix::fs::MetadataExt;
 
     pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
     pub const KSU_SUSFS: &str = concatcp!(BINARY_DIR, "ksu_susfs");
     pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
     pub const BOOTCTL_PATH: &str = concatcp!(BINARY_DIR, "bootctl");
+
+    fn is_managed_susfs_link() -> std::io::Result<bool> {
+        let link = std::fs::symlink_metadata(KSU_SUSFS)?;
+        if !link.file_type().is_file() {
+            return Ok(false);
+        }
+        let daemon = std::fs::metadata(DAEMON_PATH)?;
+        Ok(link.dev() == daemon.dev() && link.ino() == daemon.ino())
+    }
+
+    fn ensure_susfs_link() -> anyhow::Result<()> {
+        match std::fs::remove_file(KSU_SUSFS) {
+            Ok(()) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+        std::fs::hard_link(DAEMON_PATH, KSU_SUSFS)?;
+        Ok(())
+    }
+
+    fn remove_susfs_link() -> anyhow::Result<()> {
+        match is_managed_susfs_link() {
+            Ok(true) => std::fs::remove_file(KSU_SUSFS)?,
+            Ok(false) => {}
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
+        }
+        Ok(())
+    }
+
+    pub fn reconcile_susfs_link() -> anyhow::Result<()> {
+        if crate::android::susfs::config::model::Config::read_or_default().is_enabled()
+            && crate::android::susfs::api::features::show::version().is_ok()
+        {
+            ensure_susfs_link()
+        } else {
+            remove_susfs_link()
+        }
+    }
 
     pub fn ensure_binaries(ignore_if_exist: bool) -> anyhow::Result<()> {
         for file in Asset::iter() {
@@ -29,11 +69,11 @@ mod android {
         let _ = std::fs::remove_file(resetprop_link);
         std::os::unix::fs::symlink("/data/adb/ksud", resetprop_link)?;
 
-        // Create ksu_susfs -> ksud symlink (hard link)
-        if crate::android::susfs::api::features::show::version().is_ok() {
-            let ksu_susfs = KSU_SUSFS;
-            let _ = std::fs::remove_file(ksu_susfs);
-            std::fs::hard_link("/data/adb/ksud", ksu_susfs)?;
+        // Do not replace an existing client when built-in SUSFS management is disabled.
+        if crate::android::susfs::config::model::Config::read_or_default().is_enabled()
+            && crate::android::susfs::api::features::show::version().is_ok()
+        {
+            ensure_susfs_link()?;
         }
         Ok(())
     }
